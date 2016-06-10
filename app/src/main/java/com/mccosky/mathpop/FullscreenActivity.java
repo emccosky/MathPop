@@ -7,6 +7,9 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.GridView;
+
+import github.nisrulz.stackedhorizontalprogressbar.StackedHorizontalProgressBar;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
@@ -83,6 +86,9 @@ public class FullscreenActivity extends AppCompatActivity {
         }
     };
 
+    int primary_pts = 3;
+    int max = 10;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -90,22 +96,31 @@ public class FullscreenActivity extends AppCompatActivity {
         setContentView(R.layout.activity_fullscreen);
 
         mVisible = true;
-        mControlsView = findViewById(R.id.fullscreen_content_controls);
+        //mControlsView = findViewById(R.id.fullscreen_content_controls);
         mContentView = findViewById(R.id.fullscreen_content);
 
 
         // Set up the user interaction to manually show or hide the system UI.
-        mContentView.setOnClickListener(new View.OnClickListener() {
+        /*mContentView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 toggle();
             }
-        });
+        });*/
 
         // Upon interacting with UI controls, delay any scheduled hide()
         // operations to prevent the jarring behavior of controls going away
         // while interacting with the UI.
-        findViewById(R.id.dummy_button).setOnTouchListener(mDelayHideTouchListener);
+        //findViewById(R.id.dummy_button).setOnTouchListener(mDelayHideTouchListener);
+
+        StackedHorizontalProgressBar stackedHorizontalProgressBar;
+        stackedHorizontalProgressBar = (StackedHorizontalProgressBar) findViewById(R.id.progressBar);
+        stackedHorizontalProgressBar.setMax(max);
+        stackedHorizontalProgressBar.setProgress(primary_pts);
+
+        GridView gridview = (GridView) findViewById(R.id.gridView);
+        AnswerAdapter answerAdapter = new AnswerAdapter(this);
+        gridview.setAdapter(answerAdapter);
     }
 
     @Override
@@ -132,7 +147,7 @@ public class FullscreenActivity extends AppCompatActivity {
         if (actionBar != null) {
             actionBar.hide();
         }
-        mControlsView.setVisibility(View.GONE);
+        //mControlsView.setVisibility(View.GONE);
         mVisible = false;
 
         // Schedule a runnable to remove the status and navigation bar after a delay

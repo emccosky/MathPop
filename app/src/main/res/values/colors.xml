@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#3F51B5</color>
-    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorPrimary">#01579b</color>
+    <color name="colorPrimaryDark">#00467c</color>
     <color name="colorAccent">#FF4081</color>
 
     <color name="black_overlay">#66000000</color>
+
+    <!-- Stacked Horizontal Progressbar Colors -->
+    <color name="shpbr_primary_progress">#81d4fa</color>
+    <color name="shpbr_secondary_progress">#FF4081</color>
 </resources>
