@@ -7,6 +7,6 @@
     <color name="black_overlay">#66000000</color>
 
     <!-- Stacked Horizontal Progressbar Colors -->
-    <color name="shpbr_primary_progress">#81d4fa</color>
-    <color name="shpbr_secondary_progress">#FF4081</color>
+    <color name="shpbr_primary_progress">#76f560</color>
+    <color name="shpbr_secondary_progress">#f74b57</color>
 </resources>

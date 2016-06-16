@@ -8,6 +8,10 @@ import android.os.Handler;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.GridView;
+import android.widget.Toast;
+
+import java.util.ArrayList;
+import java.util.Random;
 
 import github.nisrulz.stackedhorizontalprogressbar.StackedHorizontalProgressBar;
 
@@ -71,23 +75,26 @@ public class FullscreenActivity extends AppCompatActivity {
             hide();
         }
     };
-    /**
-     * Touch listener to use for in-layout UI controls to delay hiding the
-     * system UI. This is to prevent the jarring behavior of controls going away
-     * while interacting with activity UI.
-     */
-    private final View.OnTouchListener mDelayHideTouchListener = new View.OnTouchListener() {
-        @Override
-        public boolean onTouch(View view, MotionEvent motionEvent) {
-            if (AUTO_HIDE) {
-                delayedHide(AUTO_HIDE_DELAY_MILLIS);
-            }
-            return false;
-        }
-    };
 
-    int primary_pts = 3;
-    int max = 10;
+    //======================================== CLASS VARIABLES ========================================
+
+    private int[] results = new int[10];
+
+    private boolean questionGen = false;
+    private int[] questions = new int[10];
+    private int[][] answerPattern = {   {1,0,1},
+                                        {0,1,0},
+                                        {1,1,0}};
+    private int[][] currModel = new int[3][3];
+    
+    private int currQuestion = 0;
+    private final int numChoices = 5;
+    private int[] choices = new int[numChoices];
+    private ArrayList<Integer> choosenAnswers = new ArrayList<>();
+    
+    private int correctCount = 9;
+    private int wrongCount = 1;
+    private int max = 10;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -96,31 +103,17 @@ public class FullscreenActivity extends AppCompatActivity {
         setContentView(R.layout.activity_fullscreen);
 
         mVisible = true;
-        //mControlsView = findViewById(R.id.fullscreen_content_controls);
         mContentView = findViewById(R.id.fullscreen_content);
-
-
-        // Set up the user interaction to manually show or hide the system UI.
-        /*mContentView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                toggle();
-            }
-        });*/
-
-        // Upon interacting with UI controls, delay any scheduled hide()
-        // operations to prevent the jarring behavior of controls going away
-        // while interacting with the UI.
-        //findViewById(R.id.dummy_button).setOnTouchListener(mDelayHideTouchListener);
 
         StackedHorizontalProgressBar stackedHorizontalProgressBar;
         stackedHorizontalProgressBar = (StackedHorizontalProgressBar) findViewById(R.id.progressBar);
         stackedHorizontalProgressBar.setMax(max);
-        stackedHorizontalProgressBar.setProgress(primary_pts);
+        stackedHorizontalProgressBar.setProgress(correctCount);
+        stackedHorizontalProgressBar.setSecondaryProgress(wrongCount);
 
-        GridView gridview = (GridView) findViewById(R.id.gridView);
+        /*GridView gridview = (GridView) findViewById(R.id.gridView);
         AnswerAdapter answerAdapter = new AnswerAdapter(this);
-        gridview.setAdapter(answerAdapter);
+        gridview.setAdapter(answerAdapter);*/
     }
 
     @Override
@@ -174,5 +167,221 @@ public class FullscreenActivity extends AppCompatActivity {
     private void delayedHide(int delayMillis) {
         mHideHandler.removeCallbacks(mHideRunnable);
         mHideHandler.postDelayed(mHideRunnable, delayMillis);
+    }
+
+    //check to see if there are 2 answers that have been selected yet
+    private boolean checkAnswers(){
+        return false;
+    }
+
+    private void addAnswer(int answer){
+        choosenAnswers.add(answer);
+        for (int i = 0; i < choices.length; i++){
+            if (choices[i] == answer){
+                choices[i] = 0;
+            }
+        }
+        if (choosenAnswers.size() == 2){
+            nextQuestion();
+        }
+    }
+
+    private void checkQuestion(){
+        int ans1 = choosenAnswers.get(0);
+        int ans2 = choosenAnswers.get(1);
+
+        if((ans1 + ans2) == questions[currQuestion]){
+            correctCount++;
+            Toast.makeText(this, "Correct!", Toast.LENGTH_SHORT);
+        } else {
+            wrongCount++;
+            Toast.makeText(this, "Wrong Answer!", Toast.LENGTH_SHORT);
+        }
+    }
+
+    private void nextQuestion(){
+        checkQuestion();
+        if(currQuestion < 9) {
+            currQuestion++;
+            updateChoices(choices);
+        } else {
+            //END GAME
+        }
+    }
+
+    //update the choices array
+    private void updateChoices(int[] leftovers){
+        int qNum = questions[currQuestion];
+        Random r = new Random();
+        choices = new int[numChoices];
+
+        //only runs the for the first time the answers are generated
+        if(leftovers.length - zeroCount(leftovers) == 0) {
+            int spot = 0;
+
+            //generate a random number for the first correct answer
+            int num1 = r.nextInt(9) + 1;
+            choices[spot++] = num1;
+
+            //get the second correct answer
+            int num2 = qNum - num1;
+            choices[spot++] = num2;
+
+            boolean isNumAcceptable = false;
+
+            for (int i = 0; i < (numChoices - 4); i++) {
+                int tryNum = 0;
+                while (!isNumAcceptable) {
+                    //give the number the benefit of the doubt
+                    isNumAcceptable = true;
+                    tryNum = r.nextInt(9) + 1;
+
+                    boolean contains = false;
+                    boolean conflicts = false;
+                    for (int num : choices) {
+                        if (num == tryNum) {
+                            contains = true;
+                        }
+                        if ((num + tryNum) == qNum) {
+                            conflicts = true;
+                        }
+                    }
+
+                    //check to see if the number is not acceptable
+                    if (contains) {
+                        isNumAcceptable = false;
+                    }
+                    if (conflicts) {
+                        isNumAcceptable = false;
+                    }
+                }
+
+                choices[spot++] = tryNum;
+            }
+        } else {
+            if(hasAnswer(leftovers, qNum)){
+                int spot = 0;
+                boolean isNumAcceptable = false;
+                for (int i = 0; i < leftovers.length; i++) {
+                    if (leftovers[i] != 0){
+                        choices[spot++] = leftovers[i];
+                    } else {
+                        int tryNum = 0;
+                        while (!isNumAcceptable) {
+                            //give the number the benefit of the doubt
+                            isNumAcceptable = true;
+                            tryNum = r.nextInt(9) + 1;
+
+                            boolean contains = false;
+                            boolean conflicts = false;
+                            for (int num : choices) {
+                                if (num == tryNum) {
+                                    contains = true;
+                                }
+                                if ((num + tryNum) == qNum) {
+                                    conflicts = true;
+                                }
+                            }
+
+                            //check to see if the number is not acceptable
+                            if (contains) {
+                                isNumAcceptable = false;
+                            }
+                            if (conflicts) {
+                                isNumAcceptable = false;
+                            }
+                        }
+
+                        choices[spot++] = tryNum;
+                    }
+                }
+            } else {
+                choices = leftovers;
+                //pick a random choice that exists
+                int num1 = leftovers[r.nextInt(leftovers.length) + 1];
+                //get the second correct answer
+                int num2 = qNum - num1;
+                //find a 0 and set the new num2 to it
+                for (int i = 0; i < leftovers.length; i++){
+                    if (leftovers[i] == 0){
+                        leftovers[i] = num2;
+                        break;
+                    }
+                }
+
+                int spot = 0;
+                boolean isNumAcceptable = false;
+                for (int i = 0; i < leftovers.length; i++) {
+                    if (leftovers[i] != 0){
+                        choices[spot++] = leftovers[i];
+                    } else {
+                        int tryNum = 0;
+                        while (!isNumAcceptable) {
+                            //give the number the benefit of the doubt
+                            isNumAcceptable = true;
+                            tryNum = r.nextInt(9) + 1;
+
+                            boolean contains = false;
+                            boolean conflicts = false;
+                            for (int num : choices) {
+                                if (num == tryNum) {
+                                    contains = true;
+                                }
+                                if ((num + tryNum) == qNum) {
+                                    conflicts = true;
+                                }
+                            }
+
+                            //check to see if the number is unacceptable
+                            if (contains) {
+                                isNumAcceptable = false;
+                            }
+                            if (conflicts) {
+                                isNumAcceptable = false;
+                            }
+                        }
+
+                        choices[spot++] = tryNum;
+                    }
+                }
+
+            }
+        }
+
+        setBubbles();
+    }
+
+    private boolean hasAnswer(int[] currChoices, int question){
+        for (int i = 0; i < currChoices.length; i++){
+            int reqNum = question - currChoices[i];
+            for(int j = 0; j < currChoices.length && j != i; j++){
+                if (currChoices[j] == reqNum) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private int zeroCount(int[] checkArray){
+        int count = 0;
+        for (int item : checkArray){
+            if (item == 0){
+                count++;
+            }
+        }
+        return count;
+    }
+
+    //TODO: make a pattern, then have a method that puts values in where there's a 1 in the pattern
+    private void setBubbles() {
+        for(int i = 0; i < answerPattern.length; i++){
+            for(int j = 0; j < answerPattern[i].length; j++){
+                if(answerPattern[i][j] != 0){
+
+                }
+            }
+        }
+
     }
 }

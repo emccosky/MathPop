@@ -37,17 +37,91 @@
             android:textSize="80dp"
             android:textStyle="bold" />
 
-        <GridView xmlns:android="http://schemas.android.com/apk/res/android"
-            android:id="@+id/gridView"
+        <ImageView
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:id="@+id/bubble1"
+            android:layout_marginTop="210dp"
+            android:layout_marginStart="20dp"
+            android:scaleType="centerCrop"
+            android:background="@drawable/bubble" />
+        <ImageView
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:id="@+id/bubble2"
+            android:layout_marginTop="210dp"
+            android:layout_marginStart="140dp"
+            android:scaleType="centerCrop"
+            android:background="@drawable/bubble"/>
+        <ImageView
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:id="@+id/bubble3"
+            android:layout_marginTop="210dp"
+            android:layout_marginStart="260dp"
+            android:scaleType="centerCrop"
+            android:background="@drawable/bubble"/>
+
+        <ImageView
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:id="@+id/bubble4"
+            android:layout_marginTop="310dp"
+            android:layout_marginStart="20dp"
+            android:scaleType="centerCrop"
+            android:background="@drawable/bubble"/>
+        <ImageView
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:id="@+id/bubble5"
+            android:layout_marginTop="310dp"
+            android:layout_marginStart="140dp"
+            android:scaleType="centerCrop"
+            android:background="@drawable/bubble"/>
+        <ImageView
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:id="@+id/bubble6"
+            android:layout_marginTop="310dp"
+            android:layout_marginStart="260dp"
+            android:scaleType="centerCrop"
+            android:background="@drawable/bubble"/>
+
+        <ImageView
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:id="@+id/bubble7"
+            android:layout_marginTop="410dp"
+            android:layout_marginStart="20dp"
+            android:scaleType="centerCrop"
+            android:background="@drawable/bubble"/>
+        <ImageView
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:id="@+id/bubble8"
+            android:layout_marginTop="410dp"
+            android:layout_marginStart="140dp"
+            android:scaleType="centerCrop"
+            android:background="@drawable/bubble"/>
+        <ImageView
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:id="@+id/bubble9"
+            android:layout_marginTop="410dp"
+            android:layout_marginStart="260dp"
+            android:scaleType="centerCrop"
+            android:background="@drawable/bubble"/>
+
+        <TextView
             android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:layout_marginTop="220dp"
-            android:columnWidth="120dp"
-            android:numColumns="auto_fit"
-            android:verticalSpacing="0dp"
-            android:horizontalSpacing="0dp"
-            android:stretchMode="columnWidth"
-            android:gravity="center" />
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="0dp"
+            android:layout_gravity="bottom"
+            android:textSize="50dp"
+            android:textAlignment="center"
+            android:textColor="#ffcdd2"
+            android:text="00:00.00"
+            android:background="#ef5350"/>
 
 
     </FrameLayout>
