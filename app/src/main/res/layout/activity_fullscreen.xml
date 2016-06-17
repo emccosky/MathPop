@@ -26,7 +26,7 @@
             android:progressDrawable="@drawable/stacked_horizontal_progress"/>
 
         <TextView
-            android:id="@+id/fullscreen_content"
+            android:id="@+id/questionView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="100dp"

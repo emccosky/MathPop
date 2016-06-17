@@ -9,10 +9,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.AndroidCharacter;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.GridView;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -85,15 +87,18 @@ public class FullscreenActivity extends AppCompatActivity {
 
     private int[] results = new int[10];
 
+    //SET THESE VARIABLES FOR DIFFERENT GAMEPLAY
+    private final int numChoices = 5;
+    private final int numQuestions = 10;
+
     private boolean questionGen = false;
-    private int[] questions = new int[10];
+    private int[] questions = new int[numQuestions];
     private int[][] answerPattern = {{1, 0, 1},
             {0, 1, 0},
             {1, 1, 0}};
     private int[][] currModel = new int[3][3];
 
     private int currQuestion = 0;
-    private final int numChoices = 5;
     private int[] choices = new int[numChoices];
     private ArrayList<Integer> choosenAnswers = new ArrayList<>();
 
@@ -108,7 +113,7 @@ public class FullscreenActivity extends AppCompatActivity {
         setContentView(R.layout.activity_fullscreen);
 
         mVisible = true;
-        mContentView = findViewById(R.id.fullscreen_content);
+        mContentView = findViewById(R.id.questionView);
 
         StackedHorizontalProgressBar stackedHorizontalProgressBar;
         stackedHorizontalProgressBar = (StackedHorizontalProgressBar) findViewById(R.id.progressBar);
@@ -119,6 +124,10 @@ public class FullscreenActivity extends AppCompatActivity {
         /*GridView gridview = (GridView) findViewById(R.id.gridView);
         AnswerAdapter answerAdapter = new AnswerAdapter(this);
         gridview.setAdapter(answerAdapter);*/
+
+        generateQuestions();
+        updateChoices(new int[]{0,0,0,0,0});
+
     }
 
     @Override
@@ -174,9 +183,11 @@ public class FullscreenActivity extends AppCompatActivity {
         mHideHandler.postDelayed(mHideRunnable, delayMillis);
     }
 
-    //check to see if there are 2 answers that have been selected yet
-    private boolean checkAnswers() {
-        return false;
+    private void generateQuestions(){
+        Random r = new Random();
+        for (int i = 0; i < numQuestions; i++){
+            questions[i] = r.nextInt(17) + 2;
+        }
     }
 
     private void addAnswer(int answer) {
@@ -207,7 +218,9 @@ public class FullscreenActivity extends AppCompatActivity {
     private void nextQuestion() {
         checkQuestion();
         if (currQuestion < 9) {
-            currQuestion++;
+            String nextQ = Integer.toString(questions[++currQuestion]);
+            TextView question = (TextView) findViewById(R.id.questionView);
+            question.setText(nextQ);
             updateChoices(choices);
         } else {
             //END GAME
@@ -227,14 +240,16 @@ public class FullscreenActivity extends AppCompatActivity {
             //generate a random number for the first correct answer
             int num1 = r.nextInt(9) + 1;
             choices[spot++] = num1;
+            Log.d("Choice", "" + num1);
 
             //get the second correct answer
             int num2 = qNum - num1;
             choices[spot++] = num2;
+            Log.d("Choice", "" + num2);
 
             boolean isNumAcceptable = false;
 
-            for (int i = 0; i < (numChoices - 4); i++) {
+            for (int i = 0; i < (numChoices - 2); i++) {
                 int tryNum = 0;
                 while (!isNumAcceptable) {
                     //give the number the benefit of the doubt
@@ -262,6 +277,7 @@ public class FullscreenActivity extends AppCompatActivity {
                 }
 
                 choices[spot++] = tryNum;
+                Log.d("Choice", "" + tryNum);
             }
         } else {
             if (hasAnswer(leftovers, qNum)) {
@@ -298,6 +314,7 @@ public class FullscreenActivity extends AppCompatActivity {
                         }
 
                         choices[spot++] = tryNum;
+                        Log.d("Choice", "" + tryNum);
                     }
                 }
             } else {
@@ -347,6 +364,7 @@ public class FullscreenActivity extends AppCompatActivity {
                         }
 
                         choices[spot++] = tryNum;
+                        Log.d("Choice", "" + tryNum);
                     }
                 }
 
@@ -375,6 +393,7 @@ public class FullscreenActivity extends AppCompatActivity {
                 count++;
             }
         }
+        Log.d("Zero Count", "" + count);
         return count;
     }
 
@@ -389,6 +408,11 @@ public class FullscreenActivity extends AppCompatActivity {
 
         //for the very first question do a clean gen of the bubble field
         if (currQuestion == 0) {
+            //Set the question text since the method isnt being called in the context of nextQuestion
+            String nextQ = Integer.toString(questions[currQuestion]);
+            TextView question = (TextView)findViewById(R.id.questionView);
+            question.setText(nextQ);
+
             //TODO: Generate a random pattern for the beginning
             for (int i = 0; i < answerPattern.length; i++) {
                 for (int j = 0; j < answerPattern[i].length; j++) {
@@ -477,7 +501,5 @@ public class FullscreenActivity extends AppCompatActivity {
                 }
             }
         }
-
-
     }
 }
