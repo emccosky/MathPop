@@ -221,6 +221,7 @@ public class FullscreenActivity extends AppCompatActivity {
             String nextQ = Integer.toString(questions[++currQuestion]);
             TextView question = (TextView) findViewById(R.id.questionView);
             question.setText(nextQ);
+            Log.d("Curr Question", "" + nextQ);
             updateChoices(choices);
         } else {
             //END GAME
@@ -238,7 +239,7 @@ public class FullscreenActivity extends AppCompatActivity {
             int spot = 0;
 
             //generate a random number for the first correct answer
-            int num1 = r.nextInt(9) + 1;
+            int num1 = r.nextInt(qNum);
             choices[spot++] = num1;
             Log.d("Choice", "" + num1);
 
@@ -404,7 +405,7 @@ public class FullscreenActivity extends AppCompatActivity {
             tempChoices.add(item);
         }
 
-        //ASSIGN VALUES TO THE MODEL BASE DON THE PATTERN
+        //ASSIGN VALUES TO THE MODEL BASED ON THE PATTERN
 
         //for the very first question do a clean gen of the bubble field
         if (currQuestion == 0) {
@@ -412,8 +413,10 @@ public class FullscreenActivity extends AppCompatActivity {
             String nextQ = Integer.toString(questions[currQuestion]);
             TextView question = (TextView)findViewById(R.id.questionView);
             question.setText(nextQ);
+            Log.d("Curr Question", "" + nextQ);
 
             //TODO: Generate a random pattern for the beginning
+
             for (int i = 0; i < answerPattern.length; i++) {
                 for (int j = 0; j < answerPattern[i].length; j++) {
                     if (answerPattern[i][j] == 1) {
