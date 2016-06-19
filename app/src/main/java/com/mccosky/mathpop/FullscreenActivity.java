@@ -91,20 +91,22 @@ public class FullscreenActivity extends AppCompatActivity {
     private final int numChoices = 5;
     private final int numQuestions = 10;
 
-    private boolean questionGen = false;
-    private int[] questions = new int[numQuestions];
-    private int[][] answerPattern = {{1, 0, 1},
-            {0, 1, 0},
-            {1, 1, 0}};
+
+    private int[][] answerPattern = {   {1, 0, 1},
+                                        {0, 1, 0},
+                                        {1, 1, 0}};
     private int[][] currModel = new int[3][3];
 
+    private int currAnswer;
     private int currQuestion = 0;
     private int[] choices = new int[numChoices];
+    private int[] changedAnswers;
     private ArrayList<Integer> choosenAnswers = new ArrayList<>();
+    private ArrayList<Integer> poppedIndices = new ArrayList<>();
 
-    private int correctCount = 9;
-    private int wrongCount = 1;
-    private int max = 10;
+    private int correctCount = 0;
+    private int wrongCount = 0;
+    private int max = numQuestions;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -115,19 +117,8 @@ public class FullscreenActivity extends AppCompatActivity {
         mVisible = true;
         mContentView = findViewById(R.id.questionView);
 
-        StackedHorizontalProgressBar stackedHorizontalProgressBar;
-        stackedHorizontalProgressBar = (StackedHorizontalProgressBar) findViewById(R.id.progressBar);
-        stackedHorizontalProgressBar.setMax(max);
-        stackedHorizontalProgressBar.setProgress(correctCount);
-        stackedHorizontalProgressBar.setSecondaryProgress(wrongCount);
-
-        /*GridView gridview = (GridView) findViewById(R.id.gridView);
-        AnswerAdapter answerAdapter = new AnswerAdapter(this);
-        gridview.setAdapter(answerAdapter);*/
-
-        generateQuestions();
-        updateChoices(new int[]{0,0,0,0,0});
-
+        updateProgress();
+        nextQuestion();
     }
 
     @Override
@@ -183,11 +174,12 @@ public class FullscreenActivity extends AppCompatActivity {
         mHideHandler.postDelayed(mHideRunnable, delayMillis);
     }
 
-    private void generateQuestions(){
-        Random r = new Random();
-        for (int i = 0; i < numQuestions; i++){
-            questions[i] = r.nextInt(17) + 2;
-        }
+    private void updateProgress(){
+        StackedHorizontalProgressBar stackedHorizontalProgressBar;
+        stackedHorizontalProgressBar = (StackedHorizontalProgressBar) findViewById(R.id.progressBar);
+        stackedHorizontalProgressBar.setMax(max);
+        stackedHorizontalProgressBar.setProgress(correctCount);
+        stackedHorizontalProgressBar.setSecondaryProgress(wrongCount);
     }
 
     private void addAnswer(int answer) {
@@ -195,18 +187,36 @@ public class FullscreenActivity extends AppCompatActivity {
         for (int i = 0; i < choices.length; i++) {
             if (choices[i] == answer) {
                 choices[i] = 0;
+                break;
             }
         }
+
+        Log.d("Selected", "" + answer);
+        String out = "";
+        for (int i : choices){
+            out += i + " ";
+        }
+        Log.d("New Choices", out);
+
+        for (int index : poppedIndices){
+            int temp = index - 1;
+            int temp2 = temp / 3;
+            int temp3 = temp % 3;
+            currModel[temp2][temp3] = 0;
+        }
+        poppedIndices = new ArrayList<>();
+
         if (choosenAnswers.size() == 2) {
             nextQuestion();
         }
+        updateProgress();
     }
 
     private void checkQuestion() {
         int ans1 = choosenAnswers.get(0);
         int ans2 = choosenAnswers.get(1);
 
-        if ((ans1 + ans2) == questions[currQuestion]) {
+        if ((ans1 + ans2) == currAnswer) {
             correctCount++;
             Toast.makeText(this, "Correct!", Toast.LENGTH_SHORT).show();
         } else {
@@ -216,175 +226,57 @@ public class FullscreenActivity extends AppCompatActivity {
     }
 
     private void nextQuestion() {
-        checkQuestion();
-        if (currQuestion < 9) {
-            String nextQ = Integer.toString(questions[++currQuestion]);
-            TextView question = (TextView) findViewById(R.id.questionView);
-            question.setText(nextQ);
-            Log.d("Curr Question", "" + nextQ);
-            updateChoices(choices);
+        if (currQuestion > 0) {
+            checkQuestion();
+        }
+        choosenAnswers = new ArrayList<>();
+
+        String output = "";
+        for (int i = 0; i < currModel.length; i++){
+            for (int j = 0; j < currModel[i].length; j++){
+                output += currModel[i][j];
+            }
+            output += "\n";
+        }
+        Log.d("currModel", output);
+
+        if (currQuestion < 10) {
+            currQuestion++;
+            repopulateChoices();
+            genAnswer();
+            setViews();
         } else {
             //END GAME
+            System.exit(0);
         }
     }
 
-    //update the choices array
-    private void updateChoices(int[] leftovers) {
-        int qNum = questions[currQuestion];
+    private void repopulateChoices(){
+        changedAnswers = zeroLocations(choices);
         Random r = new Random();
-        choices = new int[numChoices];
 
-        //only runs the for the first time the answers are generated
-        if (leftovers.length - zeroCount(leftovers) == 0) {
-            int spot = 0;
-
-            //generate a random number for the first correct answer
-            int num1 = r.nextInt(qNum);
-            choices[spot++] = num1;
-            Log.d("Choice", "" + num1);
-
-            //get the second correct answer
-            int num2 = qNum - num1;
-            choices[spot++] = num2;
-            Log.d("Choice", "" + num2);
-
-            boolean isNumAcceptable = false;
-
-            for (int i = 0; i < (numChoices - 2); i++) {
-                int tryNum = 0;
-                while (!isNumAcceptable) {
-                    //give the number the benefit of the doubt
-                    isNumAcceptable = true;
-                    tryNum = r.nextInt(9) + 1;
-
-                    boolean contains = false;
-                    boolean conflicts = false;
-                    for (int num : choices) {
-                        if (num == tryNum) {
-                            contains = true;
-                        }
-                        if ((num + tryNum) == qNum) {
-                            conflicts = true;
-                        }
-                    }
-
-                    //check to see if the number is not acceptable
-                    if (contains) {
-                        isNumAcceptable = false;
-                    }
-                    if (conflicts) {
-                        isNumAcceptable = false;
-                    }
-                }
-
-                choices[spot++] = tryNum;
-                Log.d("Choice", "" + tryNum);
-            }
-        } else {
-            if (hasAnswer(leftovers, qNum)) {
-                int spot = 0;
-                boolean isNumAcceptable = false;
-                for (int i = 0; i < leftovers.length; i++) {
-                    if (leftovers[i] != 0) {
-                        choices[spot++] = leftovers[i];
-                    } else {
-                        int tryNum = 0;
-                        while (!isNumAcceptable) {
-                            //give the number the benefit of the doubt
-                            isNumAcceptable = true;
-                            tryNum = r.nextInt(9) + 1;
-
-                            boolean contains = false;
-                            boolean conflicts = false;
-                            for (int num : choices) {
-                                if (num == tryNum) {
-                                    contains = true;
-                                }
-                                if ((num + tryNum) == qNum) {
-                                    conflicts = true;
-                                }
-                            }
-
-                            //check to see if the number is not acceptable
-                            if (contains) {
-                                isNumAcceptable = false;
-                            }
-                            if (conflicts) {
-                                isNumAcceptable = false;
-                            }
-                        }
-
-                        choices[spot++] = tryNum;
-                        Log.d("Choice", "" + tryNum);
-                    }
-                }
-            } else {
-                choices = leftovers;
-                //pick a random choice that exists
-                int num1 = leftovers[r.nextInt(leftovers.length) + 1];
-                //get the second correct answer
-                int num2 = qNum - num1;
-                //find a 0 and set the new num2 to it
-                for (int i = 0; i < leftovers.length; i++) {
-                    if (leftovers[i] == 0) {
-                        leftovers[i] = num2;
-                        break;
-                    }
-                }
-
-                int spot = 0;
-                boolean isNumAcceptable = false;
-                for (int i = 0; i < leftovers.length; i++) {
-                    if (leftovers[i] != 0) {
-                        choices[spot++] = leftovers[i];
-                    } else {
-                        int tryNum = 0;
-                        while (!isNumAcceptable) {
-                            //give the number the benefit of the doubt
-                            isNumAcceptable = true;
-                            tryNum = r.nextInt(9) + 1;
-
-                            boolean contains = false;
-                            boolean conflicts = false;
-                            for (int num : choices) {
-                                if (num == tryNum) {
-                                    contains = true;
-                                }
-                                if ((num + tryNum) == qNum) {
-                                    conflicts = true;
-                                }
-                            }
-
-                            //check to see if the number is unacceptable
-                            if (contains) {
-                                isNumAcceptable = false;
-                            }
-                            if (conflicts) {
-                                isNumAcceptable = false;
-                            }
-                        }
-
-                        choices[spot++] = tryNum;
-                        Log.d("Choice", "" + tryNum);
-                    }
-                }
-
-            }
+        for (int zLoc : changedAnswers){
+            choices[zLoc] = r.nextInt(9) + 1;
         }
-
-        setBubbles();
     }
 
-    private boolean hasAnswer(int[] currChoices, int question) {
-        for (int i = 0; i < currChoices.length; i++) {
-            int reqNum = question - currChoices[i];
-            for (int j = 0; j < currChoices.length && j != i; j++) {
-                if (currChoices[j] == reqNum) {
-                    return true;
-                }
+    private void genAnswer(){
+        Random r = new Random();
+
+        int spot1 = r.nextInt(choices.length);
+        Log.d("Answer Spot", "" + spot1);
+        int spot2 = 0;
+
+        boolean isNumAcceptable = false;
+        while (!isNumAcceptable){
+            isNumAcceptable = true;
+            spot2 = r.nextInt(choices.length);
+            if(spot2 == spot1){
+                isNumAcceptable = false;
             }
         }
-        return false;
+        Log.d("Answer Spot", "" + spot2);
+        currAnswer = choices[spot1] + choices[spot2];
     }
 
     private int zeroCount(int[] checkArray) {
@@ -398,109 +290,137 @@ public class FullscreenActivity extends AppCompatActivity {
         return count;
     }
 
-    private void setBubbles() {
+    private int[] zeroLocations(int[] checkArray){
+        int count = zeroCount(checkArray);
+        int[] zLocs = new int[count];
+        int spot = 0;
+
+        for (int i = 0; i < checkArray.length; i++){
+            if (checkArray[i] == 0){
+                zLocs[spot++] = i;
+            }
+        }
+        return zLocs;
+    }
+
+    private void setViews() {
         Random r = new Random();
         ArrayList<Integer> tempChoices = new ArrayList<>();
-        for (int item : choices) {
-            tempChoices.add(item);
+        if (currQuestion == 0) {
+            for (int item : choices) {
+                tempChoices.add(item);
+            }
+        } else {
+            for (int i = 0; i < numChoices; i++) {
+                for (int spot : changedAnswers) {
+                    if (spot == i) {
+                        tempChoices.add(choices[i]);
+                    }
+                }
+            }
         }
 
-        //ASSIGN VALUES TO THE MODEL BASED ON THE PATTERN
+        //Set the text in the question prompt field
+        String nextQ = Integer.toString(currAnswer);
+        TextView question = (TextView)findViewById(R.id.questionView);
+        question.setText(nextQ);
+        Log.d("Curr Question", "" + nextQ);
 
         //for the very first question do a clean gen of the bubble field
-        if (currQuestion == 0) {
-            //Set the question text since the method isnt being called in the context of nextQuestion
-            String nextQ = Integer.toString(questions[currQuestion]);
-            TextView question = (TextView)findViewById(R.id.questionView);
-            question.setText(nextQ);
-            Log.d("Curr Question", "" + nextQ);
-
-            //TODO: Generate a random pattern for the beginning
-
-            for (int i = 0; i < answerPattern.length; i++) {
-                for (int j = 0; j < answerPattern[i].length; j++) {
+        String output = "\n";
+        for (int i = 0; i < answerPattern.length; i++) {
+            for (int j = 0; j < answerPattern[i].length; j++) {
+                if (currModel[i][j] == 0) {
                     if (answerPattern[i][j] == 1) {
                         currModel[i][j] = tempChoices.remove(r.nextInt(tempChoices.size()));
                     } else {
                         currModel[i][j] = 0;
                     }
                 }
+                output += currModel[i][j];
             }
+            output += "\n";
+        }
+        Log.d("Answer Model", output);
+        Log.d("Question Num", "" + currQuestion);
 
-            for (int i = 0; i < currModel.length; i++) {
-                for (int j = 0; j < currModel[i].length; j++) {
-                    final int choice = currModel[i][j];
-                    if (choice != 0) {
-                        int id = 0;
-                        switch ((i * 3) + (j + 1)){
-                            case 1:
-                                id = R.id.bubble1;
-                                break;
-                            case 2:
-                                id = R.id.bubble2;
-                                break;
-                            case 3:
-                                id = R.id.bubble3;
-                                break;
-                            case 4:
-                                id = R.id.bubble4;
-                                break;
-                            case 5:
-                                id = R.id.bubble5;
-                                break;
-                            case 6:
-                                id = R.id.bubble6;
-                                break;
-                            case 7:
-                                id = R.id.bubble7;
-                                break;
-                            case 8:
-                                id = R.id.bubble8;
-                                break;
-                            case 9:
-                                id = R.id.bubble9;
-                                break;
-                        }
-
-                        final ImageView currBubble = (ImageView)findViewById(id);
-                        switch (choice){
-                            case 1:
-                                currBubble.setBackground(getDrawable(R.drawable.bubble1));
-                                break;
-                            case 2:
-                                currBubble.setBackground(getDrawable(R.drawable.bubble2));
-                                break;
-                            case 3:
-                                currBubble.setBackground(getDrawable(R.drawable.bubble3));
-                                break;
-                            case 4:
-                                currBubble.setBackground(getDrawable(R.drawable.bubble4));
-                                break;
-                            case 5:
-                                currBubble.setBackground(getDrawable(R.drawable.bubble5));
-                                break;
-                            case 6:
-                                currBubble.setBackground(getDrawable(R.drawable.bubble6));
-                                break;
-                            case 7:
-                                currBubble.setBackground(getDrawable(R.drawable.bubble7));
-                                break;
-                            case 8:
-                                currBubble.setBackground(getDrawable(R.drawable.bubble8));
-                                break;
-                            case 9:
-                                currBubble.setBackground(getDrawable(R.drawable.bubble9));
-                                break;
-                        }
-
-                        currBubble.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                currBubble.setBackground(getDrawable(R.drawable.popped_bubble));
-                                addAnswer(choice);
-                            }
-                        });
+        for (int i = 0; i < currModel.length; i++) {
+            for (int j = 0; j < currModel[i].length; j++) {
+                final int choice = currModel[i][j];
+                int id = 0;
+                final int gridIndex = (i * 3) + (j + 1);
+                switch (gridIndex){
+                    case 1:
+                        id = R.id.bubble1;
+                        break;
+                    case 2:
+                        id = R.id.bubble2;
+                        break;
+                    case 3:
+                        id = R.id.bubble3;
+                        break;
+                    case 4:
+                        id = R.id.bubble4;
+                        break;
+                    case 5:
+                        id = R.id.bubble5;
+                        break;
+                    case 6:
+                        id = R.id.bubble6;
+                        break;
+                    case 7:
+                        id = R.id.bubble7;
+                        break;
+                    case 8:
+                        id = R.id.bubble8;
+                        break;
+                    case 9:
+                        id = R.id.bubble9;
+                        break;
+                }
+                if (choice != 0) {
+                    final ImageView currBubble = (ImageView)findViewById(id);
+                    switch (choice){
+                        case 1:
+                            currBubble.setBackground(getDrawable(R.drawable.bubble1));
+                            break;
+                        case 2:
+                            currBubble.setBackground(getDrawable(R.drawable.bubble2));
+                            break;
+                        case 3:
+                            currBubble.setBackground(getDrawable(R.drawable.bubble3));
+                            break;
+                        case 4:
+                            currBubble.setBackground(getDrawable(R.drawable.bubble4));
+                            break;
+                        case 5:
+                            currBubble.setBackground(getDrawable(R.drawable.bubble5));
+                            break;
+                        case 6:
+                            currBubble.setBackground(getDrawable(R.drawable.bubble6));
+                            break;
+                        case 7:
+                            currBubble.setBackground(getDrawable(R.drawable.bubble7));
+                            break;
+                        case 8:
+                            currBubble.setBackground(getDrawable(R.drawable.bubble8));
+                            break;
+                        case 9:
+                            currBubble.setBackground(getDrawable(R.drawable.bubble9));
+                            break;
                     }
+
+                    currBubble.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            currBubble.setBackground(getDrawable(R.drawable.popped_bubble));
+                            poppedIndices.add(gridIndex);
+                            addAnswer(choice);
+                        }
+                    });
+                } else {
+                    final ImageView currBubble = (ImageView) findViewById(id);
+                    currBubble.setVisibility(View.INVISIBLE);
                 }
             }
         }
