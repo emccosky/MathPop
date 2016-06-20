@@ -1,6 +1,7 @@
 package com.mccosky.mathpop;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.media.Image;
 import android.support.annotation.DrawableRes;
@@ -94,7 +95,7 @@ public class FullscreenActivity extends AppCompatActivity {
 
     private int[][] answerPattern = {   {1, 0, 1},
                                         {0, 1, 0},
-                                        {1, 1, 0}};
+                                        {1, 0, 1}};
     private int[][] currModel = new int[3][3];
 
     private int currAnswer;
@@ -119,6 +120,9 @@ public class FullscreenActivity extends AppCompatActivity {
 
         updateProgress();
         nextQuestion();
+
+        startTime = System.currentTimeMillis();
+        startTimer.run();
     }
 
     @Override
@@ -246,8 +250,11 @@ public class FullscreenActivity extends AppCompatActivity {
             genAnswer();
             setViews();
         } else {
-            //END GAME
-            System.exit(0);
+            Intent i = new Intent(getApplicationContext(), ResultActivity.class);
+            i.putExtra("time", elapsedTime);
+            i.putExtra("correct", correctCount);
+            i.putExtra("wrong", wrongCount);
+            startActivity(i);
         }
     }
 
@@ -425,4 +432,75 @@ public class FullscreenActivity extends AppCompatActivity {
             }
         }
     }
+
+    private Handler mHandler = new Handler();
+    private long startTime;
+    private long elapsedTime;
+    private final int REFRESH_RATE = 100;
+    private String hours,minutes,seconds,milliseconds;
+    private long secs,mins,hrs,msecs;
+
+    private void updateTimer (float time){
+        secs = (long)(time/1000);
+        mins = (long)((time/1000)/60);
+        hrs = (long)(((time/1000)/60)/60);
+
+		/* Convert the seconds to String
+		 * and format to ensure it has
+		 * a leading zero when required
+		 */
+        secs = secs % 60;
+        seconds=String.valueOf(secs);
+        if(secs == 0){
+            seconds = "00";
+        }
+        if(secs <10 && secs > 0){
+            seconds = "0"+seconds;
+        }
+
+		/* Convert the minutes to String and format the String */
+
+        mins = mins % 60;
+        minutes=String.valueOf(mins);
+        if(mins == 0){
+            minutes = "00";
+        }
+        if(mins <10 && mins > 0){
+            minutes = "0"+minutes;
+        }
+
+    	/* Convert the hours to String and format the String */
+
+        hours=String.valueOf(hrs);
+        if(hrs == 0){
+            hours = "00";
+        }
+        if(hrs <10 && hrs > 0){
+            hours = "0"+hours;
+        }
+
+        milliseconds = String.valueOf((long)time);
+        if(milliseconds.length()==2){
+            milliseconds = "0"+milliseconds;
+        }
+        if(milliseconds.length()<=1){
+            milliseconds = "00";
+        }
+
+		/* Setting the timer text to the elapsed time */
+        ((TextView)findViewById(R.id.timer)).setText(hours + ":" + minutes + ":" + seconds + "." + milliseconds);
+    }
+
+    private Runnable startTimer = new Runnable() {
+        public void run() {
+            elapsedTime = System.currentTimeMillis() - startTime;
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    updateTimer(elapsedTime);
+                }
+            });
+            mHandler.postDelayed(this,REFRESH_RATE);
+        }
+    };
 }
