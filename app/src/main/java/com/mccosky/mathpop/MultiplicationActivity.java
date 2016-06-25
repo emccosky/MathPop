@@ -27,7 +27,7 @@ import github.nisrulz.stackedhorizontalprogressbar.StackedHorizontalProgressBar;
  * An example full-screen activity that shows and hides the system UI (i.e.
  * status bar and navigation/system bar) with user interaction.
  */
-public class FullscreenActivity extends AppCompatActivity {
+public class MultiplicationActivity extends AppCompatActivity {
     /**
      * Whether or not the system UI should be auto-hidden after
      * {@link #AUTO_HIDE_DELAY_MILLIS} milliseconds.
@@ -90,12 +90,13 @@ public class FullscreenActivity extends AppCompatActivity {
 
     //SET THESE VARIABLES FOR DIFFERENT GAMEPLAY
     private final int numChoices = 5;
-    private final int numQuestions = 10;
+    Intent i = getIntent();
+    private final int numQuestions = (int)i.getExtras().get("numQ");
 
 
     private int[][] answerPattern = {   {1, 0, 1},
-                                        {0, 1, 0},
-                                        {1, 0, 1}};
+            {0, 1, 0},
+            {1, 0, 1}};
     private int[][] currModel = new int[3][3];
 
     private int currAnswer;
@@ -124,7 +125,7 @@ public class FullscreenActivity extends AppCompatActivity {
         startTime = System.currentTimeMillis();
         startTimer.run();
 
-        ((TextView)findViewById(R.id.typeView)).setText("Addition");
+        ((TextView)findViewById(R.id.typeView)).setText("Multiplication");
     }
 
     @Override
@@ -222,7 +223,7 @@ public class FullscreenActivity extends AppCompatActivity {
         int ans1 = choosenAnswers.get(0);
         int ans2 = choosenAnswers.get(1);
 
-        if ((ans1 + ans2) == currAnswer) {
+        if ((ans1 * ans2) == currAnswer) {
             correctCount++;
             //Toast.makeText(this, "Correct!", Toast.LENGTH_SHORT).show();
         } else {
@@ -285,7 +286,7 @@ public class FullscreenActivity extends AppCompatActivity {
             }
         }
         Log.d("Answer Spot", "" + spot2);
-        currAnswer = choices[spot1] + choices[spot2];
+        currAnswer = choices[spot1] * choices[spot2];
     }
 
     private int zeroCount(int[] checkArray) {

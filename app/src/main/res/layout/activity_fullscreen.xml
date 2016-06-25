@@ -26,6 +26,18 @@
             android:progressDrawable="@drawable/stacked_horizontal_progress"/>
 
         <TextView
+            android:id="@+id/typeView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="75dp"
+            android:gravity="center"
+            android:keepScreenOn="true"
+            android:text="Addition"
+            android:textColor="#ffffff"
+            android:textSize="30dp"
+            android:textStyle="bold" />
+
+        <TextView
             android:id="@+id/questionView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

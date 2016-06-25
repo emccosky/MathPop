@@ -32,7 +32,7 @@ public class ResultActivity extends AppCompatActivity {
     }
 
     public void playAgain(View view){
-        Intent i = new Intent(getApplicationContext(), FullscreenActivity.class);
+        Intent i = new Intent(getApplicationContext(), MainActivity.class);
         startActivity(i);
     }
 
