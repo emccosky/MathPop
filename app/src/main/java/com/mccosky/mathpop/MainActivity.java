@@ -18,12 +18,18 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void playAdd(View v) {
-        Intent i = new Intent(getApplicationContext(), FullscreenActivity.class);6
+        EditText t = (EditText)findViewById(R.id.numQ);
+        Intent i = new Intent(getApplicationContext(), FullscreenActivity.class);
+        i.putExtra("numQ", Integer.parseInt(t.getText().toString()));
+        i.putExtra("type", "add");
         startActivity(i);
     }
 
     public void playMult(View v) {
+        EditText t = (EditText)findViewById(R.id.numQ);
         Intent i = new Intent(getApplicationContext(), MultiplicationActivity.class);
+        i.putExtra("numQ", Integer.parseInt(t.getText().toString()));
+        i.putExtra("type", "mult");
         startActivity(i);
     }
 

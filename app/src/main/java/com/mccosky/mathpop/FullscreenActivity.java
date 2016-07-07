@@ -86,21 +86,24 @@ public class FullscreenActivity extends AppCompatActivity {
 
     //======================================== CLASS VARIABLES ========================================
 
-    private int[] results = new int[10];
+    private int state = 0;
+    //STATE CODES:
+    //  0 - # out of # mode
+    //  1 - countdown based on time mode
+    //  2 - infinite until certain # of wrong answers mode
 
-    //SET THESE VARIABLES FOR DIFFERENT GAMEPLAY
-    private final int numChoices = 5;
-    private final int numQuestions = 10;
+    //SET THESE VARIABLES FOR DIFFERENT GAMEPLAYS
+    private int numChoices;
+    private int numQuestions = 10;
+    private int allowedWrongs= 10;
 
 
-    private int[][] answerPattern = {   {1, 0, 1},
-                                        {0, 1, 0},
-                                        {1, 0, 1}};
+    private int[][] answerPattern;
     private int[][] currModel = new int[3][3];
 
     private int currAnswer;
     private int currQuestion = 0;
-    private int[] choices = new int[numChoices];
+    private int[] choices;
     private int[] changedAnswers;
     private ArrayList<Integer> choosenAnswers = new ArrayList<>();
     private ArrayList<Integer> poppedIndices = new ArrayList<>();
@@ -118,6 +121,14 @@ public class FullscreenActivity extends AppCompatActivity {
         mVisible = true;
         mContentView = findViewById(R.id.questionView);
 
+        Intent intent = getIntent();
+        numChoices = (int)intent.getExtras().get("numQ");
+            choices = new int[numChoices];
+        allowedWrongs = (int)intent.getExtras().get("allowedWrongs");
+
+        Log.d("NumChoices", "" + numChoices);
+
+        genModel();
         updateProgress();
         nextQuestion();
 
@@ -180,6 +191,9 @@ public class FullscreenActivity extends AppCompatActivity {
         mHideHandler.postDelayed(mHideRunnable, delayMillis);
     }
 
+
+    //================= MAIN GAME CODE =================
+
     private void updateProgress(){
         StackedHorizontalProgressBar stackedHorizontalProgressBar;
         stackedHorizontalProgressBar = (StackedHorizontalProgressBar) findViewById(R.id.progressBar);
@@ -215,7 +229,6 @@ public class FullscreenActivity extends AppCompatActivity {
         if (choosenAnswers.size() == 2) {
             nextQuestion();
         }
-        updateProgress();
     }
 
     private void checkQuestion() {
@@ -234,6 +247,7 @@ public class FullscreenActivity extends AppCompatActivity {
     private void nextQuestion() {
         if (currQuestion > 0) {
             checkQuestion();
+            updateProgress();
         }
         choosenAnswers = new ArrayList<>();
 
@@ -246,17 +260,44 @@ public class FullscreenActivity extends AppCompatActivity {
         }
         Log.d("currModel", output);
 
-        if (currQuestion < 10) {
-            currQuestion++;
-            repopulateChoices();
-            genAnswer();
-            setViews();
-        } else {
-            Intent i = new Intent(getApplicationContext(), ResultActivity.class);
-            i.putExtra("time", elapsedTime);
-            i.putExtra("correct", correctCount);
-            i.putExtra("wrong", wrongCount);
-            startActivity(i);
+        switch (state) {
+            //# out of mode
+            case 0:
+                if (currQuestion < numQuestions) {
+                    currQuestion++;
+                    repopulateChoices();
+                    genAnswer();
+                    setViews();
+                } else {
+                    Intent i = new Intent(getApplicationContext(), ResultActivity.class);
+                    i.putExtra("time", elapsedTime);
+                    i.putExtra("correct", correctCount);
+                    i.putExtra("wrong", wrongCount);
+                    startActivity(i);
+                }
+                break;
+            // countdown mode
+            case 1:
+                currQuestion++;
+                repopulateChoices();
+                genAnswer();
+                setViews();
+                break;
+            //infinite mode
+            case 2:
+                if (wrongCount < allowedWrongs) {
+                    currQuestion++;
+                    repopulateChoices();
+                    genAnswer();
+                    setViews();
+                } else {
+                    Intent i = new Intent(getApplicationContext(), ResultActivity.class);
+                    i.putExtra("time", elapsedTime);
+                    i.putExtra("correct", correctCount);
+                    i.putExtra("wrong", wrongCount);
+                    startActivity(i);
+                }
+                break;
         }
     }
 
@@ -310,6 +351,31 @@ public class FullscreenActivity extends AppCompatActivity {
             }
         }
         return zLocs;
+    }
+
+    private void genModel(){
+        Random r = new Random();
+        answerPattern = new int[3][3];
+        int[] randoSpots = new int[numChoices];
+
+        for (int i = 0; i < numChoices; i++){
+            boolean acceptable = false;
+            int test = 0;
+            while (!acceptable){
+                acceptable = true;
+                test = r.nextInt(9);
+                for (int c : randoSpots){
+                    if (c == test){
+                        acceptable = false;
+                    }
+                }
+            }
+            randoSpots[i] = test;
+        }
+
+        for (int spot : randoSpots){
+            answerPattern[spot / 3][spot % 3] = 1;
+        }
     }
 
     private void setViews() {
