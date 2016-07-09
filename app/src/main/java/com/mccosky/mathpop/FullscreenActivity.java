@@ -86,6 +86,7 @@ public class FullscreenActivity extends AppCompatActivity {
 
     //======================================== CLASS VARIABLES ========================================
 
+    //Set default value just to be safe
     private int state = 0;
     //STATE CODES:
     //  0 - # out of # mode
@@ -94,7 +95,7 @@ public class FullscreenActivity extends AppCompatActivity {
 
     //SET THESE VARIABLES FOR DIFFERENT GAMEPLAYS
     private int numChoices;
-    private int numQuestions = 10;
+    private int numQuestions;
     private int allowedWrongs= 10;
 
 
@@ -110,7 +111,7 @@ public class FullscreenActivity extends AppCompatActivity {
 
     private int correctCount = 0;
     private int wrongCount = 0;
-    private int max = numQuestions;
+    private int max;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -124,6 +125,8 @@ public class FullscreenActivity extends AppCompatActivity {
         Intent intent = getIntent();
         numChoices = (int)intent.getExtras().get("numQ");
             choices = new int[numChoices];
+        numQuestions = (int)intent.getExtras().get("qCount");
+            max = numQuestions;
         allowedWrongs = (int)intent.getExtras().get("allowedWrongs");
 
         Log.d("NumChoices", "" + numChoices);
@@ -132,6 +135,19 @@ public class FullscreenActivity extends AppCompatActivity {
         updateProgress();
         nextQuestion();
 
+        switch (state){
+            case 0:
+                startTime = System.currentTimeMillis();
+                startTimer.run();
+                break;
+            case 1:
+                remainTime = (long)intent.getExtras().get("timeTotal");
+                break;
+            case 2:
+                TextView time = (TextView)findViewById(R.id.timer);
+                time.setVisibility(View.GONE);
+                break;
+        }
         startTime = System.currentTimeMillis();
         startTimer.run();
 
@@ -504,6 +520,7 @@ public class FullscreenActivity extends AppCompatActivity {
     private Handler mHandler = new Handler();
     private long startTime;
     private long elapsedTime;
+    private long remainTime;
     private final int REFRESH_RATE = 100;
     private String hours,minutes,seconds,milliseconds;
     private long secs,mins,hrs,msecs;
@@ -566,6 +583,20 @@ public class FullscreenActivity extends AppCompatActivity {
                 @Override
                 public void run() {
                     updateTimer(elapsedTime);
+                }
+            });
+            mHandler.postDelayed(this,REFRESH_RATE);
+        }
+    };
+
+    private Runnable startDownTimer = new Runnable() {
+        public void run() {
+            elapsedTime = System.currentTimeMillis() - startTime;
+            remainTime -= elapsedTime;
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    updateTimer(remainTime);
                 }
             });
             mHandler.postDelayed(this,REFRESH_RATE);
