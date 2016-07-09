@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.media.Image;
+import android.os.CountDownTimer;
 import android.support.annotation.DrawableRes;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -123,7 +124,8 @@ public class FullscreenActivity extends AppCompatActivity {
         mContentView = findViewById(R.id.questionView);
 
         Intent intent = getIntent();
-        numChoices = (int)intent.getExtras().get("numQ");
+        state = (int)intent.getExtras().get("state");
+        numChoices = (int)intent.getExtras().get("numChoices");
             choices = new int[numChoices];
         numQuestions = (int)intent.getExtras().get("qCount");
             max = numQuestions;
@@ -142,14 +144,15 @@ public class FullscreenActivity extends AppCompatActivity {
                 break;
             case 1:
                 remainTime = (long)intent.getExtras().get("timeTotal");
+                downTimer.start();
                 break;
             case 2:
+                startTime = System.currentTimeMillis();
+                startTimer.run();
                 TextView time = (TextView)findViewById(R.id.timer);
                 time.setVisibility(View.GONE);
                 break;
         }
-        startTime = System.currentTimeMillis();
-        startTimer.run();
 
         ((TextView)findViewById(R.id.typeView)).setText("Addition");
     }
@@ -211,11 +214,24 @@ public class FullscreenActivity extends AppCompatActivity {
     //================= MAIN GAME CODE =================
 
     private void updateProgress(){
-        StackedHorizontalProgressBar stackedHorizontalProgressBar;
-        stackedHorizontalProgressBar = (StackedHorizontalProgressBar) findViewById(R.id.progressBar);
-        stackedHorizontalProgressBar.setMax(max);
-        stackedHorizontalProgressBar.setProgress(correctCount);
-        stackedHorizontalProgressBar.setSecondaryProgress(wrongCount);
+        if (state == 0) {
+            StackedHorizontalProgressBar stackedHorizontalProgressBar;
+            stackedHorizontalProgressBar = (StackedHorizontalProgressBar) findViewById(R.id.progressBar);
+            stackedHorizontalProgressBar.setMax(max);
+            stackedHorizontalProgressBar.setProgress(correctCount);
+            stackedHorizontalProgressBar.setSecondaryProgress(wrongCount);
+        } else if (state == 1) {
+            StackedHorizontalProgressBar stackedHorizontalProgressBar;
+            stackedHorizontalProgressBar = (StackedHorizontalProgressBar) findViewById(R.id.progressBar);
+            stackedHorizontalProgressBar.setMax(correctCount + wrongCount);
+            stackedHorizontalProgressBar.setProgress(correctCount);
+            stackedHorizontalProgressBar.setSecondaryProgress(wrongCount);
+        } else {
+            StackedHorizontalProgressBar stackedHorizontalProgressBar;
+            stackedHorizontalProgressBar = (StackedHorizontalProgressBar) findViewById(R.id.progressBar);
+            stackedHorizontalProgressBar.setMax(allowedWrongs);
+            stackedHorizontalProgressBar.setSecondaryProgress(wrongCount);
+        }
     }
 
     private void addAnswer(int answer) {
@@ -285,6 +301,7 @@ public class FullscreenActivity extends AppCompatActivity {
                     genAnswer();
                     setViews();
                 } else {
+                    elapsedTime = System.currentTimeMillis() - startTime;
                     Intent i = new Intent(getApplicationContext(), ResultActivity.class);
                     i.putExtra("time", elapsedTime);
                     i.putExtra("correct", correctCount);
@@ -526,6 +543,7 @@ public class FullscreenActivity extends AppCompatActivity {
     private long secs,mins,hrs,msecs;
 
     private void updateTimer (float time){
+
         secs = (long)(time/1000);
         mins = (long)((time/1000)/60);
         hrs = (long)(((time/1000)/60)/60);
@@ -564,7 +582,7 @@ public class FullscreenActivity extends AppCompatActivity {
             hours = "0"+hours;
         }
 
-        milliseconds = String.valueOf((long)time);
+        milliseconds = String.valueOf((long)time/100);
         if(milliseconds.length()==2){
             milliseconds = "0"+milliseconds;
         }
@@ -589,17 +607,19 @@ public class FullscreenActivity extends AppCompatActivity {
         }
     };
 
-    private Runnable startDownTimer = new Runnable() {
-        public void run() {
-            elapsedTime = System.currentTimeMillis() - startTime;
-            remainTime -= elapsedTime;
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    updateTimer(remainTime);
-                }
-            });
-            mHandler.postDelayed(this,REFRESH_RATE);
+    CountDownTimer downTimer = new CountDownTimer(60000, 1) {
+
+        public void onTick(long millisUntilFinished) {
+            updateTimer(millisUntilFinished);
+        }
+
+        public void onFinish() {
+            Intent i = new Intent(getApplicationContext(), ResultActivity.class);
+            i.putExtra("time", remainTime);
+            i.putExtra("correct", correctCount);
+            i.putExtra("wrong", wrongCount);
+            startActivity(i);
+            System.exit(0);
         }
     };
 }

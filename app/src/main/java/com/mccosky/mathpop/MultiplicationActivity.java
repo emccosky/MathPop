@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.media.Image;
+import android.os.CountDownTimer;
 import android.support.annotation.DrawableRes;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -86,29 +87,32 @@ public class MultiplicationActivity extends AppCompatActivity {
 
     //======================================== CLASS VARIABLES ========================================
 
-    private int[] results = new int[10];
+    //Set default value just to be safe
+    private int state = 0;
+    //STATE CODES:
+    //  0 - # out of # mode
+    //  1 - countdown based on time mode
+    //  2 - infinite until certain # of wrong answers mode
 
-    //SET THESE VARIABLES FOR DIFFERENT GAMEPLAY
-    private final int numChoices = 5;
-    Intent i = getIntent();
-    private final int numQuestions = (int)i.getExtras().get("numQ");
+    //SET THESE VARIABLES FOR DIFFERENT GAMEPLAYS
+    private int numChoices;
+    private int numQuestions;
+    private int allowedWrongs= 10;
 
 
-    private int[][] answerPattern = {   {1, 0, 1},
-            {0, 1, 0},
-            {1, 0, 1}};
+    private int[][] answerPattern;
     private int[][] currModel = new int[3][3];
 
     private int currAnswer;
     private int currQuestion = 0;
-    private int[] choices = new int[numChoices];
+    private int[] choices;
     private int[] changedAnswers;
     private ArrayList<Integer> choosenAnswers = new ArrayList<>();
     private ArrayList<Integer> poppedIndices = new ArrayList<>();
 
     private int correctCount = 0;
     private int wrongCount = 0;
-    private int max = numQuestions;
+    private int max;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -119,11 +123,36 @@ public class MultiplicationActivity extends AppCompatActivity {
         mVisible = true;
         mContentView = findViewById(R.id.questionView);
 
+        Intent intent = getIntent();
+        state = (int)intent.getExtras().get("state");
+        numChoices = (int)intent.getExtras().get("numChoices");
+        choices = new int[numChoices];
+        numQuestions = (int)intent.getExtras().get("qCount");
+        max = numQuestions;
+        allowedWrongs = (int)intent.getExtras().get("allowedWrongs");
+
+        Log.d("NumChoices", "" + numChoices);
+
+        genModel();
         updateProgress();
         nextQuestion();
 
-        startTime = System.currentTimeMillis();
-        startTimer.run();
+        switch (state){
+            case 0:
+                startTime = System.currentTimeMillis();
+                startTimer.run();
+                break;
+            case 1:
+                remainTime = (long)intent.getExtras().get("timeTotal");
+                downTimer.start();
+                break;
+            case 2:
+                startTime = System.currentTimeMillis();
+                startTimer.run();
+                TextView time = (TextView)findViewById(R.id.timer);
+                time.setVisibility(View.GONE);
+                break;
+        }
 
         ((TextView)findViewById(R.id.typeView)).setText("Multiplication");
     }
@@ -181,12 +210,28 @@ public class MultiplicationActivity extends AppCompatActivity {
         mHideHandler.postDelayed(mHideRunnable, delayMillis);
     }
 
+
+    //================= MAIN GAME CODE =================
+
     private void updateProgress(){
-        StackedHorizontalProgressBar stackedHorizontalProgressBar;
-        stackedHorizontalProgressBar = (StackedHorizontalProgressBar) findViewById(R.id.progressBar);
-        stackedHorizontalProgressBar.setMax(max);
-        stackedHorizontalProgressBar.setProgress(correctCount);
-        stackedHorizontalProgressBar.setSecondaryProgress(wrongCount);
+        if (state == 0) {
+            StackedHorizontalProgressBar stackedHorizontalProgressBar;
+            stackedHorizontalProgressBar = (StackedHorizontalProgressBar) findViewById(R.id.progressBar);
+            stackedHorizontalProgressBar.setMax(max);
+            stackedHorizontalProgressBar.setProgress(correctCount);
+            stackedHorizontalProgressBar.setSecondaryProgress(wrongCount);
+        } else if (state == 1) {
+            StackedHorizontalProgressBar stackedHorizontalProgressBar;
+            stackedHorizontalProgressBar = (StackedHorizontalProgressBar) findViewById(R.id.progressBar);
+            stackedHorizontalProgressBar.setMax(correctCount + wrongCount);
+            stackedHorizontalProgressBar.setProgress(correctCount);
+            stackedHorizontalProgressBar.setSecondaryProgress(wrongCount);
+        } else {
+            StackedHorizontalProgressBar stackedHorizontalProgressBar;
+            stackedHorizontalProgressBar = (StackedHorizontalProgressBar) findViewById(R.id.progressBar);
+            stackedHorizontalProgressBar.setMax(allowedWrongs);
+            stackedHorizontalProgressBar.setSecondaryProgress(wrongCount);
+        }
     }
 
     private void addAnswer(int answer) {
@@ -216,7 +261,6 @@ public class MultiplicationActivity extends AppCompatActivity {
         if (choosenAnswers.size() == 2) {
             nextQuestion();
         }
-        updateProgress();
     }
 
     private void checkQuestion() {
@@ -235,6 +279,7 @@ public class MultiplicationActivity extends AppCompatActivity {
     private void nextQuestion() {
         if (currQuestion > 0) {
             checkQuestion();
+            updateProgress();
         }
         choosenAnswers = new ArrayList<>();
 
@@ -247,17 +292,45 @@ public class MultiplicationActivity extends AppCompatActivity {
         }
         Log.d("currModel", output);
 
-        if (currQuestion < 10) {
-            currQuestion++;
-            repopulateChoices();
-            genAnswer();
-            setViews();
-        } else {
-            Intent i = new Intent(getApplicationContext(), ResultActivity.class);
-            i.putExtra("time", elapsedTime);
-            i.putExtra("correct", correctCount);
-            i.putExtra("wrong", wrongCount);
-            startActivity(i);
+        switch (state) {
+            //# out of mode
+            case 0:
+                if (currQuestion < numQuestions) {
+                    currQuestion++;
+                    repopulateChoices();
+                    genAnswer();
+                    setViews();
+                } else {
+                    elapsedTime = System.currentTimeMillis() - startTime;
+                    Intent i = new Intent(getApplicationContext(), ResultActivity.class);
+                    i.putExtra("time", elapsedTime);
+                    i.putExtra("correct", correctCount);
+                    i.putExtra("wrong", wrongCount);
+                    startActivity(i);
+                }
+                break;
+            // countdown mode
+            case 1:
+                currQuestion++;
+                repopulateChoices();
+                genAnswer();
+                setViews();
+                break;
+            //infinite mode
+            case 2:
+                if (wrongCount < allowedWrongs) {
+                    currQuestion++;
+                    repopulateChoices();
+                    genAnswer();
+                    setViews();
+                } else {
+                    Intent i = new Intent(getApplicationContext(), ResultActivity.class);
+                    i.putExtra("time", elapsedTime);
+                    i.putExtra("correct", correctCount);
+                    i.putExtra("wrong", wrongCount);
+                    startActivity(i);
+                }
+                break;
         }
     }
 
@@ -311,6 +384,31 @@ public class MultiplicationActivity extends AppCompatActivity {
             }
         }
         return zLocs;
+    }
+
+    private void genModel(){
+        Random r = new Random();
+        answerPattern = new int[3][3];
+        int[] randoSpots = new int[numChoices];
+
+        for (int i = 0; i < numChoices; i++){
+            boolean acceptable = false;
+            int test = 0;
+            while (!acceptable){
+                acceptable = true;
+                test = r.nextInt(9);
+                for (int c : randoSpots){
+                    if (c == test){
+                        acceptable = false;
+                    }
+                }
+            }
+            randoSpots[i] = test;
+        }
+
+        for (int spot : randoSpots){
+            answerPattern[spot / 3][spot % 3] = 1;
+        }
     }
 
     private void setViews() {
@@ -439,11 +537,13 @@ public class MultiplicationActivity extends AppCompatActivity {
     private Handler mHandler = new Handler();
     private long startTime;
     private long elapsedTime;
+    private long remainTime;
     private final int REFRESH_RATE = 100;
     private String hours,minutes,seconds,milliseconds;
     private long secs,mins,hrs,msecs;
 
     private void updateTimer (float time){
+
         secs = (long)(time/1000);
         mins = (long)((time/1000)/60);
         hrs = (long)(((time/1000)/60)/60);
@@ -482,7 +582,7 @@ public class MultiplicationActivity extends AppCompatActivity {
             hours = "0"+hours;
         }
 
-        milliseconds = String.valueOf((long)time);
+        milliseconds = String.valueOf((long)time/100);
         if(milliseconds.length()==2){
             milliseconds = "0"+milliseconds;
         }
@@ -504,6 +604,22 @@ public class MultiplicationActivity extends AppCompatActivity {
                 }
             });
             mHandler.postDelayed(this,REFRESH_RATE);
+        }
+    };
+
+    CountDownTimer downTimer = new CountDownTimer(60000, 1) {
+
+        public void onTick(long millisUntilFinished) {
+            updateTimer(millisUntilFinished);
+        }
+
+        public void onFinish() {
+            Intent i = new Intent(getApplicationContext(), ResultActivity.class);
+            i.putExtra("time", remainTime);
+            i.putExtra("correct", correctCount);
+            i.putExtra("wrong", wrongCount);
+            startActivity(i);
+            System.exit(0);
         }
     };
 }

@@ -26,8 +26,54 @@ public class ResultActivity extends AppCompatActivity {
         correctCount = (int)i.getExtras().get("correct");
         wrongCount = (int)i.getExtras().get("wrong");
 
-        score = (int)((((double)correctCount / (double)time) / 0.005) * 9999);
-        ((TextView)findViewById(R.id.scoreBox)).setText("" + score);
+         long secs = (long)(time/1000);
+        long mins = (long)((time/1000)/60);
+        long hrs = (long)(((time/1000)/60)/60);
+
+		/* Convert the seconds to String
+		 * and format to ensure it has
+		 * a leading zero when required
+		 */
+        secs = secs % 60;
+        String seconds=String.valueOf(secs);
+        if(secs == 0){
+            seconds = "00";
+        }
+        if(secs <10 && secs > 0){
+            seconds = "0"+seconds;
+        }
+
+		/* Convert the minutes to String and format the String */
+
+        mins = mins % 60;
+        String minutes=String.valueOf(mins);
+        if(mins == 0){
+            minutes = "00";
+        }
+        if(mins <10 && mins > 0){
+            minutes = "0"+minutes;
+        }
+
+    	/* Convert the hours to String and format the String */
+
+        String hours=String.valueOf(hrs);
+        if(hrs == 0){
+            hours = "00";
+        }
+        if(hrs <10 && hrs > 0){
+            hours = "0"+hours;
+        }
+
+        String milliseconds = String.valueOf((long)time/100);
+        if(milliseconds.length()==2){
+            milliseconds = "0"+milliseconds;
+        }
+        if(milliseconds.length()<=1){
+            milliseconds = "00";
+        }
+
+		/* Setting the timer text to the elapsed time */
+        ((TextView)findViewById(R.id.scoreBox)).setText(hours + ":" + minutes + ":" + seconds + "." + milliseconds);
         ((TextView)findViewById(R.id.correctField)).setText("" + correctCount + " out of " + (correctCount + wrongCount));
     }
 
