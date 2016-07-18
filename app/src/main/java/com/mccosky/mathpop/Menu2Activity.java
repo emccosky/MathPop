@@ -15,7 +15,7 @@ import android.widget.EditText;
 
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity {
+public class Menu2Activity extends AppCompatActivity {
 
     /**
      * Whether or not the system UI should be auto-hidden after
@@ -74,11 +74,15 @@ public class MainActivity extends AppCompatActivity {
     };
 
     int param;
+    int prevParam;
+    Intent prev;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_menu2);
+        prev = getIntent();
+        prevParam = (int)prev.getExtras().get("operation");
 
         mVisible = true;
         mContentView = findViewById(R.id.textView1);
@@ -137,19 +141,25 @@ public class MainActivity extends AppCompatActivity {
         mHideHandler.postDelayed(mHideRunnable, delayMillis);
     }
 
-    public void setAdd(View view){
+    public void setEasy(View view){
         param = 0;
         nextMenu();
     }
 
-    public void setMult(View view){
+    public void setMed(View view){
         param = 1;
         nextMenu();
     }
 
+    public void setHard(View view){
+        param = 2;
+        nextMenu();
+    }
+
     public void nextMenu(){
-        Intent i = new Intent(getApplicationContext(), Menu2Activity.class);
-        i.putExtra("operation", param);
+        Intent i = new Intent(getApplicationContext(), Menu3Activity.class);
+        i.putExtra("operation", prevParam);
+        i.putExtra("difficulty", param);
         startActivity(i);
     }
 

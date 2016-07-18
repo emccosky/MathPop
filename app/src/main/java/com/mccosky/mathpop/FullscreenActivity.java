@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.media.Image;
+import android.media.MediaPlayer;
 import android.os.CountDownTimer;
 import android.support.annotation.DrawableRes;
 import android.support.v7.app.ActionBar;
@@ -123,6 +124,9 @@ public class FullscreenActivity extends AppCompatActivity {
         mVisible = true;
         mContentView = findViewById(R.id.questionView);
 
+        MediaPlayer mediaPlayer = MediaPlayer.create(this, R.raw.song);
+        mediaPlayer.start();
+
         Intent intent = getIntent();
         state = (int)intent.getExtras().get("state");
         numChoices = (int)intent.getExtras().get("numChoices");
@@ -220,17 +224,26 @@ public class FullscreenActivity extends AppCompatActivity {
             stackedHorizontalProgressBar.setMax(max);
             stackedHorizontalProgressBar.setProgress(correctCount);
             stackedHorizontalProgressBar.setSecondaryProgress(wrongCount);
+
+            TextView progressText = (TextView)findViewById(R.id.progressText);
+            progressText.setText("Correct:" + correctCount + " Incorrect:" + wrongCount);
         } else if (state == 1) {
             StackedHorizontalProgressBar stackedHorizontalProgressBar;
             stackedHorizontalProgressBar = (StackedHorizontalProgressBar) findViewById(R.id.progressBar);
             stackedHorizontalProgressBar.setMax(correctCount + wrongCount);
             stackedHorizontalProgressBar.setProgress(correctCount);
             stackedHorizontalProgressBar.setSecondaryProgress(wrongCount);
+
+            TextView progressText = (TextView)findViewById(R.id.progressText);
+            progressText.setText("Correct:" + correctCount + " Incorrect:" + wrongCount);
         } else {
             StackedHorizontalProgressBar stackedHorizontalProgressBar;
             stackedHorizontalProgressBar = (StackedHorizontalProgressBar) findViewById(R.id.progressBar);
             stackedHorizontalProgressBar.setMax(allowedWrongs);
             stackedHorizontalProgressBar.setSecondaryProgress(wrongCount);
+
+            TextView progressText = (TextView)findViewById(R.id.progressText);
+            progressText.setText("Strikes Remaining: " + (allowedWrongs - wrongCount) + "/" + allowedWrongs);
         }
     }
 
@@ -303,6 +316,7 @@ public class FullscreenActivity extends AppCompatActivity {
                 } else {
                     elapsedTime = System.currentTimeMillis() - startTime;
                     Intent i = new Intent(getApplicationContext(), ResultActivity.class);
+                    i.putExtra("state", state);
                     i.putExtra("time", elapsedTime);
                     i.putExtra("correct", correctCount);
                     i.putExtra("wrong", wrongCount);
@@ -325,6 +339,7 @@ public class FullscreenActivity extends AppCompatActivity {
                     setViews();
                 } else {
                     Intent i = new Intent(getApplicationContext(), ResultActivity.class);
+                    i.putExtra("state", state);
                     i.putExtra("time", elapsedTime);
                     i.putExtra("correct", correctCount);
                     i.putExtra("wrong", wrongCount);
@@ -491,41 +506,104 @@ public class FullscreenActivity extends AppCompatActivity {
                     switch (choice){
                         case 1:
                             currBubble.setBackground(getDrawable(R.drawable.bubble1));
+                            currBubble.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    currBubble.setBackground(getDrawable(R.drawable.popped_bubble1));
+                                    poppedIndices.add(gridIndex);
+                                    addAnswer(choice);
+                                }
+                            });
                             break;
                         case 2:
                             currBubble.setBackground(getDrawable(R.drawable.bubble2));
+                            currBubble.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    currBubble.setBackground(getDrawable(R.drawable.popped_bubble2));
+                                    poppedIndices.add(gridIndex);
+                                    addAnswer(choice);
+                                }
+                            });
                             break;
                         case 3:
                             currBubble.setBackground(getDrawable(R.drawable.bubble3));
+                            currBubble.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    currBubble.setBackground(getDrawable(R.drawable.popped_bubble3));
+                                    poppedIndices.add(gridIndex);
+                                    addAnswer(choice);
+                                }
+                            });
                             break;
                         case 4:
                             currBubble.setBackground(getDrawable(R.drawable.bubble4));
+                            currBubble.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    currBubble.setBackground(getDrawable(R.drawable.popped_bubble4));
+                                    poppedIndices.add(gridIndex);
+                                    addAnswer(choice);
+                                }
+                            });
                             break;
                         case 5:
                             currBubble.setBackground(getDrawable(R.drawable.bubble5));
+                            currBubble.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    currBubble.setBackground(getDrawable(R.drawable.popped_bubble5));
+                                    poppedIndices.add(gridIndex);
+                                    addAnswer(choice);
+                                }
+                            });
                             break;
                         case 6:
                             currBubble.setBackground(getDrawable(R.drawable.bubble6));
+                            currBubble.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    currBubble.setBackground(getDrawable(R.drawable.popped_bubble6));
+                                    poppedIndices.add(gridIndex);
+                                    addAnswer(choice);
+                                }
+                            });
                             break;
                         case 7:
                             currBubble.setBackground(getDrawable(R.drawable.bubble7));
+                            currBubble.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    currBubble.setBackground(getDrawable(R.drawable.popped_bubble7));
+                                    poppedIndices.add(gridIndex);
+                                    addAnswer(choice);
+                                }
+                            });
                             break;
                         case 8:
                             currBubble.setBackground(getDrawable(R.drawable.bubble8));
+                            currBubble.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    currBubble.setBackground(getDrawable(R.drawable.popped_bubble8));
+                                    poppedIndices.add(gridIndex);
+                                    addAnswer(choice);
+                                }
+                            });
                             break;
                         case 9:
                             currBubble.setBackground(getDrawable(R.drawable.bubble9));
+                            currBubble.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    currBubble.setBackground(getDrawable(R.drawable.popped_bubble9));
+                                    poppedIndices.add(gridIndex);
+                                    addAnswer(choice);
+                                }
+                            });
                             break;
                     }
-
-                    currBubble.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            currBubble.setBackground(getDrawable(R.drawable.popped_bubble));
-                            poppedIndices.add(gridIndex);
-                            addAnswer(choice);
-                        }
-                    });
                 } else {
                     final ImageView currBubble = (ImageView) findViewById(id);
                     currBubble.setVisibility(View.INVISIBLE);
@@ -615,6 +693,7 @@ public class FullscreenActivity extends AppCompatActivity {
 
         public void onFinish() {
             Intent i = new Intent(getApplicationContext(), ResultActivity.class);
+            i.putExtra("state", state);
             i.putExtra("time", remainTime);
             i.putExtra("correct", correctCount);
             i.putExtra("wrong", wrongCount);

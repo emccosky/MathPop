@@ -5,4 +5,6 @@
     <string name="dummy_content">DUMMY\nCONTENT</string>
     <string name="title_activity_result">ResultActivity</string>
     <string name="title_activity_main">MainActivity</string>
+    <string name="title_activity_menu2">Menu 2</string>
+    <string name="title_activity_menu3">Menu 3</string>
 </resources>

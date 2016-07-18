@@ -23,34 +23,15 @@
         android:textSize="30dp"
         android:textColor="#ccfffd"
         android:fontFamily="casual"
-        android:text="Select an Operation"
+        android:text="Select a Difficulty"
         android:id="@+id/textView1"/>
 
-    <Button
-        android:id="@+id/addButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="260dp"
-        android:layout_marginStart="95dp"
-        android:textSize="30dp"
-        android:text="Addition"
-        android:onClick="setAdd"/>
 
-    <Button
-        android:id="@+id/multButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="340dp"
-        android:layout_marginStart="50dp"
-        android:textSize="30dp"
-        android:text="Multiplication"
-        android:onClick="setMult"/>
-    <!--
     <Button
         android:id="@+id/easyButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="160dp"
+        android:layout_marginTop="260dp"
         android:layout_marginStart="130dp"
         android:background="#3b89ff"
         android:textSize="30dp"
@@ -61,24 +42,26 @@
         android:id="@+id/medButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="220dp"
+        android:layout_marginTop="330dp"
         android:layout_marginStart="115dp"
         android:background="#3b89ff"
         android:textSize="30dp"
         android:text="Medium"
         android:onClick="setMed"/>
 
+
     <Button
         android:id="@+id/hardButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="280dp"
+        android:layout_marginTop="400dp"
         android:layout_marginStart="130dp"
         android:background="#3b89ff"
         android:textSize="30dp"
         android:text="Hard"
         android:onClick="setHard"/>
 
+    <!--
     <Button
         android:id="@+id/mode1Button"
         android:layout_width="wrap_content"
@@ -114,3 +97,4 @@
         -->
 
 </RelativeLayout>
+

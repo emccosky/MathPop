@@ -15,7 +15,7 @@ import android.widget.EditText;
 
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity {
+public class Menu3Activity extends AppCompatActivity {
 
     /**
      * Whether or not the system UI should be auto-hidden after
@@ -74,11 +74,17 @@ public class MainActivity extends AppCompatActivity {
     };
 
     int param;
+    int prevParam;
+    int prevParam2;
+    Intent prev;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_menu3);
+        prev = getIntent();
+        prevParam = (int)prev.getExtras().get("operation");
+        prevParam2 = (int)prev.getExtras().get("difficulty");
 
         mVisible = true;
         mContentView = findViewById(R.id.textView1);
@@ -137,19 +143,49 @@ public class MainActivity extends AppCompatActivity {
         mHideHandler.postDelayed(mHideRunnable, delayMillis);
     }
 
-    public void setAdd(View view){
+    public void setMode1(View view){
         param = 0;
-        nextMenu();
+        startGame();
     }
 
-    public void setMult(View view){
+    public void setMode2(View view){
         param = 1;
-        nextMenu();
+        startGame();
     }
 
-    public void nextMenu(){
-        Intent i = new Intent(getApplicationContext(), Menu2Activity.class);
-        i.putExtra("operation", param);
+    public void setMode3(View view){
+        param = 2;
+        startGame();
+    }
+
+    public void startGame(){
+        Intent i;
+        if (prevParam == 0){
+            i = new Intent(getApplicationContext(), FullscreenActivity.class);
+        } else {
+            i = new Intent(getApplicationContext(), MultiplicationActivity.class);
+        }
+        switch (prevParam2){
+            case 0:
+                i.putExtra("numChoices", 4);
+                i.putExtra("qCount", 10);
+                i.putExtra("allowedWrongs", 10);
+                i.putExtra("timeTotal", (long)60000);
+                break;
+            case 1:
+                i.putExtra("numChoices", 5);
+                i.putExtra("qCount", 15);
+                i.putExtra("allowedWrongs", 5);
+                i.putExtra("timeTotal", (long)60000);
+                break;
+            case 2:
+                i.putExtra("numChoices", 7);
+                i.putExtra("qCount", 20);
+                i.putExtra("allowedWrongs", 3);
+                i.putExtra("timeTotal", (long)60000);
+                break;
+        }
+        i.putExtra("state", param);
         startActivity(i);
     }
 
