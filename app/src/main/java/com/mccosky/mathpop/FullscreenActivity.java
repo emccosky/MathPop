@@ -125,6 +125,7 @@ public class FullscreenActivity extends AppCompatActivity {
         mContentView = findViewById(R.id.questionView);
 
         MediaPlayer mediaPlayer = MediaPlayer.create(this, R.raw.song);
+        mediaPlayer.setLooping(true);
         mediaPlayer.start();
 
         Intent intent = getIntent();

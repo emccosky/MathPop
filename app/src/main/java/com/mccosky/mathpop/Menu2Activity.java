@@ -2,6 +2,7 @@ package com.mccosky.mathpop;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
@@ -83,6 +84,10 @@ public class Menu2Activity extends AppCompatActivity {
         setContentView(R.layout.activity_menu2);
         prev = getIntent();
         prevParam = (int)prev.getExtras().get("operation");
+
+        MediaPlayer mediaPlayer = MediaPlayer.create(this, R.raw.song);
+        mediaPlayer.setLooping(true);
+        mediaPlayer.start();
 
         mVisible = true;
         mContentView = findViewById(R.id.textView1);

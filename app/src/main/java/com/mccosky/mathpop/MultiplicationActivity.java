@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.media.Image;
+import android.media.MediaPlayer;
 import android.os.CountDownTimer;
 import android.support.annotation.DrawableRes;
 import android.support.v7.app.ActionBar;
@@ -119,6 +120,10 @@ public class MultiplicationActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_fullscreen);
+
+        MediaPlayer mediaPlayer = MediaPlayer.create(this, R.raw.song);
+        mediaPlayer.setLooping(true);
+        mediaPlayer.start();
 
         mVisible = true;
         mContentView = findViewById(R.id.questionView);
