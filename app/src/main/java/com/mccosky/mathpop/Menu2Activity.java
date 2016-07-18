@@ -78,6 +78,8 @@ public class Menu2Activity extends AppCompatActivity {
     int prevParam;
     Intent prev;
 
+    MediaPlayer mediaPlayer;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -85,7 +87,7 @@ public class Menu2Activity extends AppCompatActivity {
         prev = getIntent();
         prevParam = (int)prev.getExtras().get("operation");
 
-        MediaPlayer mediaPlayer = MediaPlayer.create(this, R.raw.song);
+        mediaPlayer = MediaPlayer.create(this, R.raw.song);
         mediaPlayer.setLooping(true);
         mediaPlayer.start();
 
@@ -101,6 +103,12 @@ public class Menu2Activity extends AppCompatActivity {
         // created, to briefly hint to the user that UI controls
         // are available.
         delayedHide(0);
+    }
+
+    @Override
+    protected void onStop(){
+        super.onStop();
+        mediaPlayer.stop();
     }
 
     private void toggle() {

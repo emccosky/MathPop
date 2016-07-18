@@ -115,6 +115,8 @@ public class FullscreenActivity extends AppCompatActivity {
     private int wrongCount = 0;
     private int max;
 
+    MediaPlayer mediaPlayer;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -124,7 +126,7 @@ public class FullscreenActivity extends AppCompatActivity {
         mVisible = true;
         mContentView = findViewById(R.id.questionView);
 
-        MediaPlayer mediaPlayer = MediaPlayer.create(this, R.raw.song);
+        mediaPlayer = MediaPlayer.create(this, R.raw.song);
         mediaPlayer.setLooping(true);
         mediaPlayer.start();
 
@@ -170,6 +172,12 @@ public class FullscreenActivity extends AppCompatActivity {
         // created, to briefly hint to the user that UI controls
         // are available.
         delayedHide(100);
+    }
+
+    @Override
+    protected void onStop(){
+        super.onStop();
+        mediaPlayer.stop();
     }
 
     private void toggle() {

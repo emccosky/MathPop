@@ -76,12 +76,14 @@ public class MainActivity extends AppCompatActivity {
 
     int param;
 
+    MediaPlayer mediaPlayer;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        MediaPlayer mediaPlayer = MediaPlayer.create(this, R.raw.song);
+        mediaPlayer = MediaPlayer.create(this, R.raw.song);
         mediaPlayer.setLooping(true);
         mediaPlayer.start();
 
@@ -97,6 +99,12 @@ public class MainActivity extends AppCompatActivity {
         // created, to briefly hint to the user that UI controls
         // are available.
         delayedHide(0);
+    }
+
+    @Override
+    protected void onStop(){
+        super.onStop();
+        mediaPlayer.stop();
     }
 
     private void toggle() {
